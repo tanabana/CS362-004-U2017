@@ -1,0 +1,217 @@
+BugsInTeammateCode.txt
+
+Bug Report #1
+
+Title:    isGameOver() function does not end game when it should
+
+Classifcation: Minor Bug
+
+Date:   August 2, 2017        
+Reported By:   Akane Tanaban
+Email:    tanabana@oregonstate.edu  
+
+
+Product:	Dominion game                   Version:	??
+Platform:   OS X Yosemite                   Version:	10.10.5
+Browser:    n/a                    			Version:	n/a
+URL:        n/a
+
+Is it reproducible?: Yes 
+
+Description
+===========
+The isGameOver() function is supposed to return 1 when the conditions for when the game is supposed 
+to end are met. The two possible conditions that should end the game are:
+1) when the Province card pile runs out, or
+2) when 3 of any of the other cards run out.
+
+In this particular bug, the game does not end (does not return 1) when the following card piles 
+run out: curse, mine, and treasure map.
+
+
+Steps to Produce/Reproduce
+--------------------------
+
+Use these initialized values:
+	int seed = 1000;
+	int numPlayer = 2;
+	int returnVal;
+	int r;
+	int numOfFails = 0;
+	int k[10] = {adventurer, council_room, feast, gardens, mine
+			   , remodel, smithy, village, baron, great_hall};
+	struct gameState G;
+
+Call the initializeGame function:
+	r = initializeGame(numPlayer, k, seed, &G);
+
+Set the number of cards in the curse, mine, and treasure map piles to 0:
+	G.supplyCount[curse] = 0;
+	G.supplyCount[mine] = 0;
+	G.supplyCount[treasure_map] = 0;
+	
+Call the isGameOver function:
+	returnVal = isGameOver(&G);
+	
+Call the assertTrue function. assertTrue function that I used is included below:
+	assertTrue(1, returnVal, &numOfFails);
+	
+	numOfFails is just an int that keeps track of how many failed tests.
+	
+------------------------------	
+//Counts number of failed tests.
+void assertTrue(int truthCondition, int returnVal, int* numOfFails)
+{
+
+    if(returnVal == truthCondition)
+    {
+        if(returnVal == 0)
+        {
+            printf("\tPASS: Game is NOT over.\n");
+        }
+        else
+        {
+            printf("\tPASS: Game is OVER.\n");
+        }
+    }
+    else
+    {
+        if(returnVal == 0)
+        {
+            printf("\tFAIL: Game should end.\n");
+        }
+        else
+        {
+            printf("\tFAIL: Game should not end.\n");
+        }
+        (*numOfFails)++;
+    }
+}
+
+Expected Results
+----------------
+What I expected was for the isGameOver function to return 1 to end the game.
+
+
+Actual Results
+--------------
+It returns 0 instead, so the game does not end.
+
+
+Workarounds
+-----------
+No workarounds have been created.
+
+
+Attachments
+-----------
+See attached unittest1.c for unit test on this function.
+
+
+Other Information
+-----------------
+n/a
+
+****************************************************************************************
+
+Bug Report #2
+
+Title:	Smithy card function does not draw the correct number of cards 
+		and does not always produce correct state in deck and discard. 
+
+Classification:	Serious Bug
+
+Date:	August 6, 2016     
+Reported By:	Akane Tanaban
+Email:	tanabana@oregonstate.edu      
+
+
+Product:	Dominion game                   Version:	??
+Platform:   OS X Yosemite                   Version:	10.10.5
+Browser:    n/a                    			Version:	n/a
+URL:        n/a
+
+Is it reproducible?:	Yes   
+
+
+Description
+===========
+When the Smithy card function is called, it appears to draw more cards
+than it should, which is just 3 cards. It produces a state in the deck and discard that is 
+different from what it should be after drawing 3 cards.
+
+
+Steps to Produce/Reproduce
+--------------------------
+Use these initialized values:
+	int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
+	int seed = 1000;
+	int numPlayer = 2;
+	int returnVal;
+	int r;
+	int numOfFails = 0;
+	int k[10] = {adventurer, council_room, feast, gardens, mine
+			   , remodel, smithy, village, baron, great_hall};
+	struct gameState G;
+
+Call the initializeGame function:
+	r = initializeGame(numPlayer, k, seed, &G);
+	memcpy(&testG, &G, sizeof(struct gameState));
+
+Set the number of cards in the hand, deck and discard.
+Set the card types you want in the hand, deck, and discard.
+
+	testG.handCount[0] = 3; //Player 0 has 3 cards in hand.
+	testG.hand[0][0] = smithy;
+	testG.hand[0][1] = copper;
+	testG.hand[0][2] = estate;
+
+	
+	testG.deckCount[0] = 3; //Player 0 has 3 cards in deck.
+	testG.deck[0][0] = gold;
+	testG.deck[0][1] = mine;
+	testG.deck[0][2] = curse;
+
+	
+	testG.discardCount[0] = 3; //Player 0 has 3 cards in discard.
+	testG.discard[0][0] = feast;
+	testG.discard[0][1] = village;
+	testG.discard[0][2] = gardens;
+	
+Call the Smithy function indirectly through the cardEffect function:
+	cardEffect(smithy, choice1, choice2, choice3, &testG, handpos, &bonus);
+	
+Print out card counts for hand, deck, and discard:
+	printf("hand count = %d\n", testG.handCount[0]);
+	printf("deck count = %d\n", testG.deckCount[0]);
+	printf("discard count = %d\n", testG.discardCount[0]);
+
+
+Expected Results
+----------------
+I expected the following:
+	1) Hand count to be 3 (smithy, copper, estate) - 1 (smithy) + 3 (drawn cards) = 5 cards
+	2) Deck count = 0.
+	3) Discard count = 3.
+
+
+Actual Results
+--------------
+1) Hand count 		= 6 cards
+2) Deck count 		= 2
+3) Discard count 	= 0
+
+
+Workarounds
+-----------
+No workarounds have been created.
+
+
+Attachments
+-----------
+See attached cardtest1.c for unit test on this function.
+It basically goes through the steps described earlier.
+
+Other Information
+-----------------
+n/a
